@@ -38,7 +38,7 @@ export const facts = [
   { term: 'Now', value: 'Software Engineer, JB Connect Ltd.' },
   { term: 'Based', value: 'Dhaka, Bangladesh (UTC+6)' },
   { term: 'Freelance', value: '27 contracts since 2021' },
-  { term: 'Longest run', value: '277 hours, 5.0 stars' },
+  { term: 'Longest job', value: '277 hours at 5.0 stars, on Upwork' },
   { term: 'English', value: 'IELTS Academic 7.5 (C1)' },
   { term: 'Degree', value: 'BSc CSE, AUST, 2024' },
 ];
