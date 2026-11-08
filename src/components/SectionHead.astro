@@ -1,0 +1,20 @@
+---
+interface Props {
+  label: string;
+  /** Small ordinal shown before the label, to read as an index. */
+  index?: string;
+  meta?: string;
+  /** Applied to the heading so the section can be linked to. */
+  id?: string;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { label, index, meta, id, headingLevel: Heading = 'h2' } = Astro.props;
+---
+
+<div class="section__head">
+  <Heading class="section__label" id={id}>
+    {index && <span class="section__num">{index}</span>}{label}
+  </Heading>
+  {meta && <p class="section__meta">{meta}</p>}
+</div>

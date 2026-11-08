@@ -1,0 +1,230 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import SectionHead from '../components/SectionHead.astro';
+import {
+  about,
+  facts,
+  identity,
+  lede,
+  links,
+  roles,
+  testimonials,
+  toolbox,
+  work,
+} from '../data/site.ts';
+
+const notes = (await getCollection('notes', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+// Lift the emphasis out of the statement so the accent is applied in markup,
+// not baked into the data as HTML.
+const emphasisAt = lede.statement.indexOf(lede.emphasis);
+const leadIn = emphasisAt >= 0 ? lede.statement.slice(0, emphasisAt) : lede.statement;
+const emphasis = emphasisAt >= 0 ? lede.emphasis : '';
+const rest =
+  emphasisAt >= 0 ? lede.statement.slice(emphasisAt + lede.emphasis.length) : '';
+---
+
+<Base>
+  <div class="shell">
+    <aside class="rail" aria-label="Summary">
+      <p class="identity__name">{identity.name}</p>
+      <p class="identity__role">
+        {identity.role}. {identity.focus}.
+      </p>
+      <p class="identity__place">{identity.location} / {identity.timezone}</p>
+
+      <dl class="ledger">
+        {
+          facts.map((fact) => (
+            <div class="ledger__row">
+              <dt class="ledger__term">{fact.term}</dt>
+              <dd class="ledger__value">{fact.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <ul class="ledger">
+        {
+          links.map((link) => (
+            <li>
+              <a
+                class="ledger__row ledger__row--link"
+                href={link.href}
+                rel={link.href.startsWith('http') ? 'me noopener' : undefined}
+              >
+                <span class="ledger__term">{link.label}</span>
+                <span class="ledger__label ledger__value--handle">{link.handle}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </aside>
+
+    <div class="column">
+      <section class="lede" aria-label="Introduction">
+        <h1 class="lede__statement">
+          {leadIn}{emphasis && <em>{emphasis}</em>}{rest}
+        </h1>
+        <div class="lede__body">
+          {lede.body.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+      </section>
+
+      <section class="section" id="work">
+        <SectionHead index="01" label="Selected work" meta={`${pad(work.length)} entries`} />
+        <ul class="rows">
+          {
+            work.map((item) => (
+              <li class="row">
+                <p class="row__year">{item.year}</p>
+                <div>
+                  <h3 class="row__title">
+                    {item.name}
+                    {item.status && (
+                      <span class="row__status" data-status={item.status}>
+                        {item.status}
+                      </span>
+                    )}
+                  </h3>
+                  <p class="row__blurb">{item.blurb}</p>
+                  <p class="row__stack">
+                    {item.stack.map((tech, index) => (
+                      <>
+                        {index > 0 && <i>/</i>}
+                        <span>{tech}</span>
+                      </>
+                    ))}
+                  </p>
+                  {item.links && (
+                    <p class="row__links">
+                      {item.links.map((link) => (
+                        <a href={link.href} target="_blank" rel="noopener">
+                          {link.label}
+                        </a>
+                      ))}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="section" id="employment">
+        <SectionHead
+          index="02"
+          label="Where I have worked"
+          meta={`${pad(roles.length)} roles`}
+        />
+        <ul class="rows">
+          {
+            roles.map((role) => (
+              <li class="row">
+                <p class="row__year">{role.year}</p>
+                <div>
+                  <h3 class="row__title">{role.org}</h3>
+                  <p class="row__stack">
+                    <span>{role.title}</span>
+                    <i>/</i>
+                    <span>{role.place}</span>
+                    <i>/</i>
+                    <span>{role.period}</span>
+                  </p>
+                  <p class="row__blurb">{role.blurb}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="section" id="notes">
+        <SectionHead index="03" label="Notes" meta={`${pad(notes.length)} recent`} />
+        <p class="section__note">
+          Writing about the parts that are hard to get right, mostly things I had to work
+          out for myself first.
+        </p>
+        <ul class="rows">
+          {
+            notes.map((note) => (
+              <li class="row">
+                <p class="row__year">{formatDate(note.data.date)}</p>
+                <div>
+                  <h3 class="row__title">
+                    <a class="link" href={`/notes/${note.id}/`}>
+                      {note.data.title}
+                    </a>
+                  </h3>
+                  <p class="row__blurb">{note.data.summary}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="section__note">
+          <a class="link" href="/notes/">All notes</a>
+        </p>
+      </section>
+
+      <section class="section" id="toolbox">
+        <SectionHead index="04" label="Toolbox" meta="what I actually reach for" />
+        <dl class="spec">
+          {
+            toolbox.map((group) => (
+              <div class="spec__row">
+                <dt>{group.group}</dt>
+                <dd>{group.items.join(', ')}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </section>
+
+      <section class="section" id="words">
+        <SectionHead index="05" label="Client words" meta="18 reviews on Upwork" />
+        <ul class="quotes">
+          {
+            testimonials.map((item) => (
+              <li class="quote">
+                <blockquote>{item.quote}</blockquote>
+                <p class="quote__source">
+                  {item.source} / {item.score}
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="section" id="about">
+        <SectionHead
+          index="06"
+          label="About"
+          meta={`${identity.location} / ${identity.timezone}`}
+        />
+        <div class="about">
+          <p class="about__lead">{about.lead}</p>
+          <div class="about__body">
+            {about.body.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</Base>

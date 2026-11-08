@@ -1,0 +1,81 @@
+---
+import { identity } from '../data/site.ts';
+
+const nav = [
+  { label: 'Work', href: '/#work' },
+  { label: 'Notes', href: '/notes' },
+  { label: 'Toolbox', href: '/#toolbox' },
+  { label: 'About', href: '/#about' },
+];
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => href === '/notes' && path.startsWith('/notes');
+---
+
+<header class="masthead">
+  <div class="masthead__inner">
+    <a class="wordmark" href="/">{identity.name}</a>
+
+    <nav class="nav" aria-label="Sections">
+      {
+        nav.map((item) => (
+          <a
+            class="nav__link"
+            href={item.href}
+            aria-current={isCurrent(item.href) ? 'true' : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+
+      <button class="theme" type="button" data-theme-toggle aria-label="Switch theme">
+        <svg class="theme__icon theme__icon--moon" viewBox="0 0 16 16" aria-hidden="true">
+          <path
+            d="M13.6 10.3A6.1 6.1 0 0 1 5.7 2.4a6.15 6.15 0 1 0 7.9 7.9Z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <svg class="theme__icon theme__icon--sun" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="8" cy="8" r="3.1" fill="none" stroke="currentColor" stroke-width="1.3" />
+          <path
+            d="M8 1.1v1.7M8 13.2v1.7M1.1 8h1.7M13.2 8h1.7M3.1 3.1l1.2 1.2M11.7 11.7l1.2 1.2M12.9 3.1l-1.2 1.2M4.3 11.7l-1.2 1.2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+            stroke-linecap="round"
+          />
+        </svg>
+        <span class="theme__label" aria-hidden="true"></span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const root = document.documentElement;
+  const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+
+  // The icon and the visible word are switched by CSS from :root[data-theme],
+  // so nothing flashes. Only the accessible name needs JavaScript.
+  function syncLabel() {
+    const dark = root.dataset.theme === 'dark';
+    button?.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+  }
+
+  syncLabel();
+
+  button?.addEventListener('click', () => {
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('theme', next);
+    } catch {
+      /* Private mode. The choice will not persist. */
+    }
+    syncLabel();
+  });
+</script>

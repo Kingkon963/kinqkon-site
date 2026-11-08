@@ -1,0 +1,68 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes', ({ data }) => !data.draft);
+  return notes.map((note) => ({ params: { slug: note.id }, props: { note } }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+---
+
+<Base
+  title={`${note.data.title}: Naim Kingkon`}
+  description={note.data.summary}
+  ogType="article"
+  publishedAt={note.data.date}
+>
+  <div class="shell">
+    <aside class="rail" aria-label="Note details">
+      <p class="identity__place" style="margin-top: 0">
+        <a class="article__back" href="/notes/">All notes</a>
+      </p>
+      <dl class="ledger">
+        <div class="ledger__row">
+          <dt class="ledger__term">Written</dt>
+          <dd class="ledger__value">{formatDate(note.data.date)}</dd>
+        </div>
+        <div class="ledger__row">
+          <dt class="ledger__term">By</dt>
+          <dd class="ledger__value">Naim Kingkon</dd>
+        </div>
+      </dl>
+      {
+        note.data.topics.length > 0 && (
+          <dl class="ledger">
+            <div class="ledger__row">
+              <dt class="ledger__term">Topics</dt>
+              <dd class="ledger__value">{note.data.topics.join(', ')}</dd>
+            </div>
+          </dl>
+        )
+      }
+    </aside>
+
+    <div class="column">
+      <article>
+        <header class="article__head">
+          <p class="article__kicker">{formatDate(note.data.date)}</p>
+          <h1 class="article__title">{note.data.title}</h1>
+          <p class="article__summary">{note.data.summary}</p>
+        </header>
+        <div class="prose">
+          <Content />
+        </div>
+      </article>
+    </div>
+  </div>
+</Base>
